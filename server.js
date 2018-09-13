@@ -42,17 +42,11 @@ app.get('/api/contacts/:id', function (req, res) {
 });
 
 app.post('/api/contacts', function (req, res) {
-    const schema = {
-        name: Joi.string().min(3).required(),
-        email: Joi.string().email().required(),
-        phone: Joi.string().required()
-    }
+    const { error } = validateContact(req.body);
 
-    const validation = Joi.validate(req.body, schema);
-    console.log(validation);
-
-    if(validation.error){
-        res.status(400).send(validation.error.details[0].message);
+    if (error) {
+        res.status(400).send(error.details[0].message);
+        return;
     }
 
     const contact = {
@@ -64,5 +58,34 @@ app.post('/api/contacts', function (req, res) {
     contacts.push(contact);
     res.send(contact);
 });
+
+app.put('/api/contacts/:id', function (req, res) {
+    const contact = contacts.find(contact =>
+        contact.id === parseInt(req.params.id));
+    if (!contact) res.status(404).send("The requested contact doesn't exist.");
+
+    const { error } = validateContact(req.body);
+
+    if (error) {
+        res.status(400).send(error.details[0].message);
+        return;
+    }
+    console.log(contact);
+    contact.name = req.body.name;
+    contact.email = req.body.email;
+    contact.phone = req.body.phone;
+
+    res.send(contact);
+});
+
+function validateContact(contact) {
+    const schema = {
+        name: Joi.string().min(3).required(),
+        email: Joi.string().email().required(),
+        phone: Joi.string().required()
+    }
+
+    return Joi.validate(contact, schema);
+}
 
 app.listen(port, () => console.log(`Listening on port ${port}`));

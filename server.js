@@ -70,10 +70,21 @@ app.put('/api/contacts/:id', function (req, res) {
         res.status(400).send(error.details[0].message);
         return;
     }
-    console.log(contact);
+
     contact.name = req.body.name;
     contact.email = req.body.email;
     contact.phone = req.body.phone;
+
+    res.send(contact);
+});
+
+app.delete('/api/contacts/:id', function (req, res) {
+    const contact = contacts.find(contact =>
+        contact.id === parseInt(req.params.id));
+    if (!contact) res.status(404).send("The requested contact doesn't exist.");
+
+    const index = contacts.indexOf(contact);
+    contacts.splice(index, 1);   
 
     res.send(contact);
 });
